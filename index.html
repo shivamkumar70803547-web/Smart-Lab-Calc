@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVD Smart Calc</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 15px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        h3 { color: #1a73e8; margin-bottom: 20px; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        button { background: #1a73e8; color: white; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #1557b0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; font-size: 14px; }
+        th { background: #f8f9fa; color: #555; }
+        .final-row { background: #d4edda; font-weight: bold; color: #155724; }
+        #res { margin-top: 20px; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="LGN">
+        <h3>🔐 Lab Login</h3>
+        <input type="text" id="uid" placeholder="User ID (shivam)">
+        <input type="password" id="psw" placeholder="Password (shivam@7080)">
+        <button onclick="check()">LOGIN</button>
+    </div>
+
+    <div class="card" id="APP" style="display:none;">
+        <h3>🧪 MVD Smart Calc</h3>
+        <label>Endotoxin Limit (L):</label>
+        <input type="number" id="L" value="0.2" step="0.01">
+        <label>Potency (P):</label>
+        <input type="number" id="P" value="100">
+        <label>Lambda (λ):</label>
+        <input type="number" id="Lam" value="0.125">
+        <label>Dilution Steps:</label>
+        <select id="stepSel">
+            <option value="2">2 Steps</option>
+            <option value="3" selected>3 Steps</option>
+            <option value="4">4 Steps</option>
+        </select>
+        <button onclick="run()">Calculate Steps</button>
+        <div id="res"></div>
+    </div>
+
+    <script>
+        function check() {
+            var u = document.getElementById('uid').value;
+            var p = document.getElementById('psw').value;
+            if(u === "shivam" && p === "shivam@7080") {
+                document.getElementById('LGN').style.display='none';
+                document.getElementById('APP').style.display='block';
+            } else {
+                alert("Access Denied! Check ID/Password.");
+            }
+        }
+
+        function run() {
+            var limit = parseFloat(document.getElementById('L').value);
+            var potency = parseFloat(document.getElementById('P').value);
+            var lambda = parseFloat(document.getElementById('Lam').value);
+            
+            // Core Logic: MVD/4 target
+            var target = Math.round((limit * potency) / lambda / 4);
+            var sCount = parseInt(document.getElementById('stepSel').value);
+            var cum = 1;
+            
+            var htm = "<b>Target Dilution: 1:" + target + "</b><br><table><tr><th>Step</th><th>Ratio</th><th>Pipetting</th></tr>";
+            
+            for (var i = 1; i <= sCount; i++) {
+                var factor = 10; // Default factor
+                if (i < sCount) {
+                    var remaining = target / cum;
+                    // Smart Factors for Pharma Lab
+                    var preferred = [10, 8, 9, 12, 15, 20, 5];
+                    for (var f of preferred) {
+                        if (remaining % f === 0) {
+                            factor = f;
+                            break;
+                        }
+                    }
+                } else {
+                    factor = target / cum;
+                }
+                
+                var lrw = (0.1 * factor) - 0.1;
+                htm += "<tr><td>" + i + "</td><td>1:" + factor.toFixed(1) + "</td>
